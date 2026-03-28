@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Segredos da Prosperidade Judaica</title>
 
-   <script>!function(i,n){i._plt=i._plt||(n&&n.timeOrigin?n.timeOrigin+n.now():Date.now())}(window,performance);</script>
-<link rel="preload" href="https://scripts.converteai.net/beb06ebc-0219-4b97-b88f-8ccab6eb2442/players/69c7dc6b5610b6167ac3a176/v4/player.js" as="script">
-<link rel="preload" href="https://scripts.converteai.net/lib/js/smartplayer-wc/v4/smartplayer.js" as="script">
-<link rel="dns-prefetch" href="https://m3u8.vturb.net">
-<link rel="dns-prefetch" href="https://scripts.converteai.net">
-<link rel="dns-prefetch" href="https://images.converteai.net">
-<link rel="dns-prefetch" href="https://api.vturb.com.br">
+    <script>!function(i,n){i._plt=i._plt||(n&&n.timeOrigin?n.timeOrigin+n.now():Date.now())}(window,performance);</script>
+    <link rel="preload" href="https://scripts.converteai.net/beb06ebc-0219-4b97-b88f-8ccab6eb2442/players/69c7dc6b5610b6167ac3a176/v4/player.js" as="script">
+    <link rel="preload" href="https://scripts.converteai.net/lib/js/smartplayer-wc/v4/smartplayer.js" as="script">
+    <link rel="dns-prefetch" href="https://m3u8.vturb.net">
+    <link rel="dns-prefetch" href="https://scripts.converteai.net">
+    <link rel="dns-prefetch" href="https://images.converteai.net">
+    <link rel="dns-prefetch" href="https://api.vturb.com.br">
 
     <style>
         * {
@@ -160,7 +160,12 @@
     <main class="main-content">
         <div class="video-container">
             <vturb-smartplayer id="vid-69c7dc6b5610b6167ac3a176" style="display: block; margin: 0 auto; width: 100%; max-width: 400px;"></vturb-smartplayer>
-            <vturb-smartplayer id="vid-69c7dc6b5610b6167ac3a176" style="display: block; margin: 0 auto; width: 100%; max-width: 400px;"></vturb-smartplayer> <script type="text/javascript"> var s=document.createElement("script"); s.src="https://scripts.converteai.net/beb06ebc-0219-4b97-b88f-8ccab6eb2442/players/69c7dc6b5610b6167ac3a176/v4/player.js", s.async=!0,document.head.appendChild(s); </script>
+            <script type="text/javascript">
+                var s = document.createElement("script");
+                s.src = "https://scripts.converteai.net/beb06ebc-0219-4b97-b88f-8ccab6eb2442/players/69c7dc6b5610b6167ac3a176/v4/player.js";
+                s.async = true;
+                document.head.appendChild(s);
+            </script>
         </div>
     </main>
 
@@ -184,36 +189,52 @@
     </footer>
 
     <script>
-        // ── Botão aparece aos 7:45 (465 segundos) ──
-        // Para mudar o tempo, altere apenas o número abaixo
-        const PITCH_TIME = 465;
+        const PITCH_TIME  = 465; // 7:45 — altere aqui se quiser mudar o tempo
 
         const kiwifyBlock = document.getElementById('kiwify-upsell-QoCjDEQ');
         let   pitchShown  = false;
 
-        function checkPitchTime(currentTime) {
-            if (!pitchShown && currentTime >= PITCH_TIME) {
-                kiwifyBlock.style.display = 'block';
-                // Rola suavemente até o botão
-                kiwifyBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                pitchShown = true;
-            }
+        function showPitch() {
+            if (pitchShown) return;
+            pitchShown = true;
+            kiwifyBlock.style.display = 'block';
+            kiwifyBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
-        const player = document.getElementById('vid-69c7dc6b5610b6167ac3a176');
+        function checkTime(currentTime) {
+            if (currentTime >= PITCH_TIME) showPitch();
+        }
 
-        function bindPlayer() {
+        function bindPlayer(player) {
+            // Dispara ao assistir normalmente
+            player.addEventListener('player:timeupdate', function (e) {
+                const t = e.detail && e.detail.currentTime;
+                if (t !== undefined) checkTime(t);
+            });
+
+            // Dispara ao pular (seek) para qualquer ponto
+            player.addEventListener('player:seeked', function (e) {
+                const t = e.detail && e.detail.currentTime;
+                if (t !== undefined) checkTime(t);
+            });
+
+            // Dispara também no pause após um seek
+            player.addEventListener('player:pause', function (e) {
+                const t = e.detail && e.detail.currentTime;
+                if (t !== undefined) checkTime(t);
+            });
+        }
+
+        function waitForPlayer() {
+            const player = document.getElementById('vid-69c7dc6b5610b6167ac3a176');
             if (player && typeof player.addEventListener === 'function') {
-                player.addEventListener('player:timeupdate', function (e) {
-                    const t = e.detail && e.detail.currentTime;
-                    if (t !== undefined) checkPitchTime(t);
-                });
+                bindPlayer(player);
             } else {
-                setTimeout(bindPlayer, 500);
+                setTimeout(waitForPlayer, 500);
             }
         }
 
-        bindPlayer();
+        waitForPlayer();
     </script>
 
 </body>
