@@ -49,6 +49,11 @@
             padding: 0 20px;
         }
 
+        /* Texto "Não quero" branco */
+        #kiwify-upsell-cancel-trigger-QoCjDEQ {
+            color: #fff !important;
+        }
+
         .main-content {
             flex: 1;
             display: flex;
@@ -140,7 +145,7 @@
     <!-- BOTÃO KIWIFY — fica escondido até os 7:45 -->
     <div id="kiwify-upsell-QoCjDEQ" data-upsell-url="" data-downsell-url="">
         <button id="kiwify-upsell-trigger-QoCjDEQ" style="background-color:#2ECC70;padding:12px 16px;cursor:pointer;color:#FFFFFF;font-weight:600;border-radius:4px;border:1px solid #2ECC70;font-size:20px;">Sim, quero usar 100% do meu cérebro!</button>
-        <div id="kiwify-upsell-cancel-trigger-QoCjDEQ" style="margin-top:1rem;cursor:pointer;font-size:16px;text-decoration:underline;font-family:sans-serif;">Não, eu não quero usar 100% do meu cérebro.</div>
+        <div id="kiwify-upsell-cancel-trigger-QoCjDEQ" style="margin-top:1rem;cursor:pointer;font-size:16px;text-decoration:underline;font-family:sans-serif;color:#fff;">Não, eu não quero usar 100% do meu cérebro.</div>
     </div>
     <script src="https://snippets.kiwify.com/upsell/upsell.min.js"></script>
 
@@ -168,23 +173,17 @@
             kiwifyBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
-        // Aguarda o player VTurb registrar o callback injectUrlUpdater
-        // e usa o currentTime que o próprio player expõe via player:ready
         function waitForPlayer() {
             const el = document.getElementById('vid-69c7dc6b5610b6167ac3a176');
             if (!el) { setTimeout(waitForPlayer, 300); return; }
 
             el.addEventListener('player:ready', function () {
-                // Polling direto no elemento — o VTurb expõe currentTime no elemento após ready
                 setInterval(function () {
                     const t = el.currentTime;
-                    if (typeof t === 'number') {
-                        if (t >= PITCH_TIME) showPitch();
-                    }
+                    if (typeof t === 'number' && t >= PITCH_TIME) showPitch();
                 }, 500);
             });
 
-            // Garante que mesmo sem o ready, tenta pegar o currentTime
             setInterval(function () {
                 const t = el.currentTime;
                 if (typeof t === 'number' && t >= PITCH_TIME) showPitch();
