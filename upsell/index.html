@@ -159,8 +159,7 @@
     </footer>
 
     <script>
-        const PITCH_TIME  = 465; // 7:45 em segundos — altere aqui se quiser mudar
-
+        const PITCH_TIME  = 465; // 7:45 em segundos
         const kiwifyBlock = document.getElementById('kiwify-upsell-QoCjDEQ');
         let   pitchShown  = false;
 
@@ -171,43 +170,56 @@
             kiwifyBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
-        // Busca o elemento <video> nativo dentro do player VTurb
-        // e verifica o tempo a cada 500ms — funciona com seek, play, pause
-        function startPolling() {
-            const interval = setInterval(function () {
-                // Tenta achar o <video> dentro do shadow DOM ou direto na página
-                const playerEl = document.getElementById('vid-69c7dc6b5610b6167ac3a176');
-                let video = null;
-
-                if (playerEl) {
-                    // Tenta shadow root primeiro
-                    if (playerEl.shadowRoot) {
-                        video = playerEl.shadowRoot.querySelector('video');
-                    }
-                    // Fallback: procura diretamente
-                    if (!video) {
-                        video = playerEl.querySelector('video');
-                    }
-                }
-
-                // Fallback geral: qualquer <video> na página
-                if (!video) {
-                    video = document.querySelector('video');
-                }
-
-                if (video && video.currentTime >= PITCH_TIME) {
-                    showPitch();
-                    clearInterval(interval); // para de checar depois que mostrou
-                }
-            }, 500);
+        function handleTime(t) {
+            if (typeof t === 'number' && t >= PITCH_TIME) showPitch();
         }
 
-        // Aguarda o DOM estar pronto e inicia o polling
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', startPolling);
-        } else {
-            startPolling();
+        // O VTurb dispara mensagens via postMessage do iframe para a janela pai
+        window.addEventListener('message', function (e) {
+            try {
+                const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+                // Formatos conhecidos do VTurb
+                if (data && data.currentTime !== undefined) {
+                    handleTime(data.currentTime);
+                }
+                if (data && data.event === 'timeupdate' && data.currentTime !== undefined) {
+                    handleTime(data.currentTime);
+                }
+                if (data && data.event === 'seeked' && data.currentTime !== undefined) {
+                    handleTime(data.currentTime);
+                }
+                if (data && data.time !== undefined) {
+                    handleTime(data.time);
+                }
+            } catch (err) {}
+        });
+
+        // Escuta também no document (para quando o VTurb despacha CustomEvents)
+        ['player:timeupdate', 'player:seeked', 'player:pause', 'timeupdate', 'seeked'].forEach(function(evt) {
+            document.addEventListener(evt, function(e) {
+                const t = (e.detail && (e.detail.currentTime || e.detail.time)) || e.currentTime;
+                handleTime(t);
+            });
+            window.addEventListener(evt, function(e) {
+                const t = (e.detail && (e.detail.currentTime || e.detail.time)) || e.currentTime;
+                handleTime(t);
+            });
+        });
+
+        // Escuta no próprio elemento do player
+        function bindPlayerElement() {
+            const el = document.getElementById('vid-69c7dc6b5610b6167ac3a176');
+            if (!el) { setTimeout(bindPlayerElement, 500); return; }
+
+            ['player:timeupdate', 'player:seeked', 'player:pause', 'timeupdate', 'seeked'].forEach(function(evt) {
+                el.addEventListener(evt, function(e) {
+                    const t = (e.detail && (e.detail.currentTime || e.detail.time)) || e.currentTime;
+                    handleTime(t);
+                });
+            });
         }
+
+        bindPlayerElement();
     </script>
 
 </body>
